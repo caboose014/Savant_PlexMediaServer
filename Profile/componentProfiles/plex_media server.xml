@@ -4,15 +4,17 @@
 	model="Media Server" device_class="Media_server" minimum_component_engine_version="0"
 	rpm_xml_version="2.0" alias="Plex Media Server" unique_identifier="serial_number">
 	<notes>
-        You must assign the IP address of your Plex Media Server to the wire of the component - NOT the player's IP address (they can be on the same machine though).
+        You must assign the IP address of your Plex Media Server to the wire of the component - NOT the player's IP address (Client and Server can be on the same machine though).
         
-        You must put the Plex Client Identifier into the 'Serial Number' field of the component.
+        You must put the Plex Client Identifier into the 'Serial Number' field of the component in RacePoint.
         To find the Client Identifier of your player use this URL: http://PlexServerIP:32400/clients
+        The Client Identifier is referenced by the 'machineIdentifier' value. Copy the contents inside the quotation marks.
+        
         If see '401 Unauthorised' then you require a Plex Token to get this information (see bellow). 
         If you reqruire a Plex Token use this URL: http://PlexServerIP:32400/clients?X-Plex-Token=YourPlexToken
         
         If your Plex Media Server is connected with your Plex account, you will have to generate a Plex Token to allow Savant to obtain informatino and control attached players. 
-        To get a Plex Token, I have written a simple tool for this. It can be found here: http://j14.co/plex
+        To get a Plex Token, please use the tool located here: http://j14.co/plex
         To enter your Plex Token, Inspect the component in RacePoint. From the 'Show' dropdown box select "State Variables". Select 'plexToken' and fill in the 'Initial Value' in the properties.
         
         
@@ -56,8 +58,8 @@
 	<state_variable_list>
 	    <state_variable name="videoRatingKey" owning_logical_component="Plex" state_center_type="string" state_center_binding="videoRatingKey"></state_variable>
 		<state_variable name="commID" owning_logical_component="Plex" state_center_type="integer" state_center_binding="commID">0</state_variable>
-	    <state_variable name="clientID" owning_logical_component="Plex" state_center_type="string" state_center_binding="clientID" user_editable="yes"></state_variable>
-	    <state_variable name="plexToken" owning_logical_component="Plex" state_center_type="string" state_center_binding="plexToken" user_editable="yes"></state_variable>
+	    <state_variable name="clientID" owning_logical_component="Plex" state_center_type="string" state_center_binding="clientID" user_editable="yes">6eyp2goxjlkdquxr</state_variable>
+	    <state_variable name="plexToken" owning_logical_component="Plex" state_center_type="string" state_center_binding="plexToken" user_editable="yes">gusieJ1b3Q4dCq5pDLzb</state_variable>
 		<state_variable name="videoTime" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoTime">0</state_variable>
 		<state_variable name="videoSecond" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoSecond">0</state_variable>
 		<state_variable name="videoMinute" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoMinute">0</state_variable>
