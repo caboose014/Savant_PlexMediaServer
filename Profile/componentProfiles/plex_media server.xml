@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Plex"
+	model="Media Server" device_class="Media_server" minimum_component_engine_version="0"
+	rpm_xml_version="2.0" alias="Plex Media Server" unique_identifier="serial_number">
+	<notes>
+        You must assign the IP address of your Plex Media Server to the wire of the component - NOT the player's IP address (they can be on the same machine though).
+        
+        You must put the Plex Client Identifier into the 'Serial Number' field of the component.
+        To find the Client Identifier of your player use this URL: http://PlexServerIP:32400/clients
+        If see '401 Unauthorised' then you require a Plex Token to get this information (see bellow). 
+        If you reqruire a Plex Token use this URL: http://PlexServerIP:32400/clients?X-Plex-Token=YourPlexToken
+        
+        If your Plex Media Server is connected with your Plex account, you will have to generate a Plex Token to allow Savant to obtain informatino and control attached players. 
+        To get a Plex Token, I have written a simple tool for this. It can be found here: http://j14.co/plex
+        To enter your Plex Token, Inspect the component in RacePoint. From the 'Show' dropdown box select "State Variables". Select 'plexToken' and fill in the 'Initial Value' in the properties.
+        
+        
+        ====================== Change Log ==================
+        Version: 2.0 First:  - Initial Release
+</notes>
+	<control_interfaces preferred="ip">
+		<ip port="32400" response_time_length_ms="5000" name_on_component="ETHERNET" protocol="http">
+			<!--<receive_end_condition test_condition="data" type="hex">0a</receive_end_condition>-->
+		</ip>
+	</control_interfaces>
+	<media_interfaces>
+		<output name_on_component="HDMI">
+			<combined_media>
+				<audio_media type="hdmi_audio"/>
+				<video_media type="hdmi"/>
+			</combined_media>
+			<resource resource_type="AV_EXTERNALMEDIASERVER_SOURCE"/>
+		</output>
+		<output name_on_component="Audio Out">
+			<audio_media type="analog_spdif_combination_minijack"/>
+			<audio_media type="rca_stereo"/>
+			<resource resource_type="AV_EXTERNALMEDIASERVER_SOURCE"/>
+			<resource resource_type="AV_VOLUMECONTROL_FUNCTION"/>
+		</output>
+		<output name_on_component="Optical Out">
+			<audio_media type="optical_digital"/>
+			<resource resource_type="AV_EXTERNALMEDIASERVER_SOURCE"/>
+		</output>
+		<output name_on_component="Coaxial Out">
+			<audio_media type="coaxial_digital"/>
+			<resource resource_type="AV_EXTERNALMEDIASERVER_SOURCE"/>
+		</output>
+		<data name_on_component="Ethernet">
+			<combined_media>
+				<data_media type="ethernet"/>
+				<control port="32433"/>
+			</combined_media>
+		</data>
+	</media_interfaces>
+	<state_variable_list>
+	    <state_variable name="videoRatingKey" owning_logical_component="Plex" state_center_type="string" state_center_binding="videoRatingKey"></state_variable>
+		<state_variable name="commID" owning_logical_component="Plex" state_center_type="integer" state_center_binding="commID">0</state_variable>
+	    <state_variable name="clientID" owning_logical_component="Plex" state_center_type="string" state_center_binding="clientID" user_editable="yes">6eyp2goxjlkdquxr</state_variable>
+	    <state_variable name="plexToken" owning_logical_component="Plex" state_center_type="string" state_center_binding="plexToken" user_editable="yes">gusieJ1b3Q4dCq5pDLzb</state_variable>
+		<state_variable name="videoTime" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoTime">0</state_variable>
+		<state_variable name="videoSecond" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoSecond">0</state_variable>
+		<state_variable name="videoMinute" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoMinute">0</state_variable>
+		<state_variable name="videoHour" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoHour">0</state_variable>
+	</state_variable_list>
+	<logical_component logical_component_name="Plex">
+		<implementation>
+			<output name_on_component="HDMI"/>
+			<output name_on_component="Audio Out"/>
+			<output name_on_component="Optical Out"/>
+			<output name_on_component="Coaxial Out"/>
+		</implementation>
+		<status_messages>
+			<status_message name="Video Polling">
+				<root_object name="MediaContainer" matches_required="none" format="xml">
+					<values path="//Timeline[@type='video']/@seekRange" matches_required="none">
+						<update state="videoSeekRange" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@state" matches_required="none">
+						<update state="videoState" type="string"></update>
+					</values>
+					<!--<values path="//Timeline[@type='video']/@duration" matches_required="none">
+						<update state="videoDuration" type="string"></update>
+					</values>-->
+					<values path="//Timeline[@type='video']/@time" matches_required="none">
+						<update state="videoTime" type="integer"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@subtitleStreamID" matches_required="none">
+						<update state="videoSubtitleStreamID" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@containerKey" matches_required="none">
+						<update state="videoContainerKey" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@guid" matches_required="none">
+						<update state="videoGUID" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@key" matches_required="none">
+						<update state="videoKey" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@controllable" matches_required="none">
+						<update state="videoControlMethods" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@ratingKey" matches_required="none">
+						<update state="videoRatingKey" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@location" matches_required="none">
+						<update state="videoLocation" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@mute" matches_required="none">
+						<!--<update state="videoMute" type="string"></update>-->
+						<value_map match_required="yes">
+							<map key="0">
+								<update state="videoMute" type="boolean">false</update>
+							</map>
+							<map key="1">
+								<update state="videoMute" type="boolean">true</update>
+							</map>
+						</value_map>
+					</values>
+					<values path="//Timeline[@type='video']/@playQueueVersion" matches_required="none">
+						<update state="videoPlayQueueVersion" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@token" matches_required="none">
+						<update state="videoToken" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@machineIdentifier" matches_required="none">
+						<update state="videoMachineIdentifier" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@address" matches_required="none">
+						<update state="videoAddress" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@repeat" matches_required="none">
+						<!--<update state="videoRepeat" type="string"></update>-->
+						<value_map match_required="yes">
+							<map key="0">
+								<update state="videoRepeat" type="boolean">false</update>
+							</map>
+							<map key="1">
+								<update state="videoRepeat" type="boolean">true</update>
+							</map>
+						</value_map>
+					</values>
+					<values path="//Timeline[@type='video']/@audioStreamID" matches_required="none">
+						<update state="videoAudioStreamID" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@port" matches_required="none">
+						<update state="videoPort" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@volume" matches_required="none">
+						<update state="videoVolume" type="integer"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@protocol" matches_required="none">
+						<update state="videoProtocol" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@playQueueItemID" matches_required="none">
+						<update state="videoPlayQueueItemID" type="string"></update>
+					</values>
+					<values path="//Timeline[@type='video']/@shuffle" matches_required="none">
+						<!--<update state="videoShuffle" type="string"></update>-->
+						<value_map match_required="yes">
+							<map key="0">
+								<update state="videoShuffle" type="boolean">false</update>
+							</map>
+							<map key="1">
+								<update state="videoShuffle" type="boolean">true</update>
+							</map>
+						</value_map>
+					</values>
+					<values path="//Timeline[@type='video']/@playQueueID" matches_required="none">
+						<update state="videoPlayQueueID" type="string"></update>
+					</values>
+					<values path="//@commandID" matches_required="none">
+						<update state="commID" type="integer"></update>
+					</values>
+				    
+				    <values path="//Video/@title" matches_required="none">
+				        <update state="videoTitle" type="string"></update>
+				    </values>
+				    <values path="//Video/@summary" matches_required="none">
+				        <update state="videoSummary" type="string"></update>
+				    </values>
+				    <values path="//Video/@year" matches_required="none">
+				        <update state="videoYear" type="string"></update>
+				    </values>
+				    <values path="//Video/@tagline" matches_required="none">
+				        <update state="videoTagline" type="string"></update>
+				    </values>
+				    <values path="//Video/@thumb" matches_required="none">
+				        <update state="videoThumb" type="string"></update>
+				    </values>
+				    <values path="//Video/@art" matches_required="none">
+				        <update state="videoArt" type="string"></update>
+				    </values>
+				    <values path="//Video/@duration" matches_required="none">
+				        <update state="videoDuration" type="string"></update>
+				    </values>
+				    <values path="//Video/@title" matches_required="none">
+				        <update state="videoTitle" type="string"></update>
+				    </values>
+				    <values path="//Video/@type" matches_required="none">
+				        <update state="videoType" type="string"></update>
+				    </values>
+				    <values path="//Video/@contentRating" matches_required="none">
+				        <update state="videoContentRating" type="string"></update>
+				    </values>
+				    <values path="//Video/@rating" matches_required="none">
+				        <update state="videoRating" type="string"></update>
+				    </values>
+				    <values path="//Video/Media/@videoResolution" matches_required="none">
+				        <update state="videoResolution" type="string"></update>
+				    </values>
+				    <values path="//Video/Media/@aspectRatio" matches_required="none">
+				        <update state="videoAspectRatio" type="string"></update>
+				    </values>
+				    <values path="//Video/Media/@audioChannels" matches_required="none">
+				        <update state="videoAudioChannels" type="string"></update>
+				    </values>
+				    <values path="//Video/Media/@audioCodec" matches_required="none">
+				        <update state="videoAudioCodec" type="string"></update>
+				    </values>
+				    <values path="//Video/Media/@videoCodec" matches_required="none">
+				        <update state="videoCodec" type="string"></update>
+				    </values>
+				    <values path="//Video/Media/@container" matches_required="none">
+				        <update state="videoContainer" type="string"></update>
+				    </values>
+				    <values path="//Video/Media/@videoFrameRate" matches_required="none">
+				        <update state="videoFrameRate" type="string"></update>
+				    </values>
+				</root_object>
+				<run_elements>
+					<actions>
+						<action name="updatetoSeconds">
+							<update_state_variable name="videoTime" update_type="divide" update_source="constant">1000</update_state_variable>
+							<update_state_variable name="videoSecond" update_type="set" update_source="state_variable">videoTime</update_state_variable>
+							<update_state_variable name="videoSecond" update_type="modulus" update_source="constant">60</update_state_variable>
+							<update_state_variable name="videoMinute" update_type="set" update_source="state_variable">videoTime</update_state_variable>
+							<update_state_variable name="videoMinute" update_type="divide" update_source="constant">60</update_state_variable>
+							<update_state_variable name="videoHour" update_type="set" update_source="state_variable">videoMinute</update_state_variable>
+							<update_state_variable name="videoMinute" update_type="modulus" update_source="constant">60</update_state_variable>
+							<update_state_variable name="videoHour" update_type="divide" update_source="constant">60</update_state_variable>
+							<update_state_variable name="videoHour" update_type="modulus" update_source="constant">60</update_state_variable>
+						</action>
+					</actions>
+				</run_elements>
+			</status_message>
+			
+			<status_message name="GetPlayerResources">
+				<root_object name="MediaContainer" matches_required="at_least_one" format="xml">
+					<values path="/MediaContainer/Player/@deviceClass" matches_required="at_least_one">
+						<update state="deviceClass" type="string"></update>
+					</values>
+					<values path="/MediaContainer/Player/@machineIdentifier" matches_required="at_least_one">
+						<update state="machineIdentifier" type="string"></update>
+					</values>
+					<values path="/MediaContainer/Player/@platform" matches_required="at_least_one">
+						<update state="platform" type="string"></update>
+					</values>
+					<values path="/MediaContainer/Player/@platformVersion" matches_required="at_least_one">
+						<update state="platformVersion" type="string"></update>
+					</values>
+					<values path="/MediaContainer/Player/@products" matches_required="at_least_one">
+						<update state="product" type="string"></update>
+					</values>
+					<values path="/MediaContainer/Player/@protocolCapabilities" matches_required="at_least_one">
+						<update state="protocolCapabilities" type="string"></update>
+					</values>
+					<values path="/MediaContainer/Player/@protocolVersion" matches_required="at_least_one">
+						<update state="protocolVersion" type="string"></update>
+					</values>
+					<values path="/MediaContainer/Player/@title" matches_required="at_least_one">
+						<update state="title" type="string"></update>
+					</values>
+					<values path="/MediaContainer/Player/@version" matches_required="at_least_one">
+						<update state="version" type="string"></update>
+					</values>
+				</root_object>
+			</status_message>
+		</status_messages>
+		<universal_component_actions>
+			<action name="PowerOn">
+				<command_interface interface="ip">
+					<command>
+						<delay ms_delay="3000"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="PowerOff">
+				<command_interface interface="ip">
+					<command>
+						<delay ms_delay="2000"/>
+					</command>
+				</command_interface>
+			</action>
+		</universal_component_actions>
+		<resource_component_actions resource_type="AV_EXTERNALMEDIASERVER_SOURCE">
+			<action name="Select">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/select?commandID=</command_string>
+						<parameter_list>
+							<parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="OSDCursorUp">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/moveUp?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="OSDCursorDown">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/moveDown?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="OSDCursorLeft">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/moveLeft?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="OSDCursorRight">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/moveRight?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Exit">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/back?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Play">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/play?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Pause">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/pause?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Stop">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/stop?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="ScanUp">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/stepForward?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="ScanDown">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/stepBack?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="StepUp">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/stepForward?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="StepDown">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/stepBack?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="SkipUp">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/skipNext?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="SkipDown">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/skipPrevious?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Info">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/toggleOSD?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Menu">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/toggleOSD?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Home">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/home?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Music">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/navigation/music?commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Repeat">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/setParameters?repeat=1&amp;commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="Random">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/playback/setParameters?shuffle=1&amp;commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+		</resource_component_actions>
+		<custom_component_actions>
+			<action name="Poll">
+				<update_state_variable name="commID" update_type="increment" update_source="constant">1</update_state_variable>
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">player/timeline/poll?wait=0&amp;commandID=</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="commID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Target-Client-Identifier=</parameter>
+						    <parameter parameter_data_type="character" state_variable="clientID"/>
+						    <parameter parameter_data_type="character">&amp;X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+				<execute_on_schedule period_ms="0"/>
+				<execute_on_schedule period_ms="30000"/>
+			</action>
+			<action name="GetVideoInfo">
+				<command_interface interface="ip">
+					<command response_required="no">
+						<http_header name="X-Plex-Client-Identifier">C4FFA5A5-62E3-4B90-BC35-4BF8CED7DFEC</http_header>
+						<http_header name="X-Plex-Device-Name">Savant-Plex</http_header>
+						<command_string type="character" http_request_type="GET">library/metadata/</command_string>
+						<parameter_list>
+						    <parameter parameter_data_type="character" state_variable="videoRatingKey"/>
+						    <parameter parameter_data_type="character">?X-Plex-Token=</parameter>
+						    <parameter parameter_data_type="character" state_variable="plexToken"/>
+						</parameter_list>
+						<delay ms_delay="50"/>
+					</command>
+				</command_interface>
+			</action>
+			<action name="GetResources">
+				<command_interface interface="ip">
+					<command>
+						<command_string type="character" http_request_type="GET">resources</command_string>
+						<delay ms_delay="100"/>
+					</command>
+				</command_interface>
+			</action>
+		</custom_component_actions>
+	</logical_component>
+</component>
