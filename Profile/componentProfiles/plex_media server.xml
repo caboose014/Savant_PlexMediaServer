@@ -56,8 +56,8 @@
 	<state_variable_list>
 	    <state_variable name="videoRatingKey" owning_logical_component="Plex" state_center_type="string" state_center_binding="videoRatingKey"></state_variable>
 		<state_variable name="commID" owning_logical_component="Plex" state_center_type="integer" state_center_binding="commID">0</state_variable>
-	    <state_variable name="clientID" owning_logical_component="Plex" state_center_type="string" state_center_binding="clientID" user_editable="yes">6eyp2goxjlkdquxr</state_variable>
-	    <state_variable name="plexToken" owning_logical_component="Plex" state_center_type="string" state_center_binding="plexToken" user_editable="yes">gusieJ1b3Q4dCq5pDLzb</state_variable>
+	    <state_variable name="clientID" owning_logical_component="Plex" state_center_type="string" state_center_binding="clientID" user_editable="yes"></state_variable>
+	    <state_variable name="plexToken" owning_logical_component="Plex" state_center_type="string" state_center_binding="plexToken" user_editable="yes"></state_variable>
 		<state_variable name="videoTime" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoTime">0</state_variable>
 		<state_variable name="videoSecond" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoSecond">0</state_variable>
 		<state_variable name="videoMinute" owning_logical_component="Plex" state_center_type="integer" state_center_binding="videoMinute">0</state_variable>
